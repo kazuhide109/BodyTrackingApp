@@ -28,6 +28,7 @@ x86/
 [Aa][Rr][Mm]64/
 bld/
 [Bb]in/
+!bin/
 [Oo]bj/
 [Ll]og/
 [Ll]ogs/
@@ -401,3 +402,5 @@ FodyWeavers.xsd
 
 addons/AzureKinectBodyTrackingSDK/*
 addons/OrbbecSDK_K4A_Wrapper_v1.10.3_windows_202408091749/*
+
+*.DS_Store
