@@ -6,10 +6,10 @@ void ofApp::setup() {
     //ofSetFrameRate(60);
 
     uint32_t count = k4a_device_get_installed_count();
-    ofLogNotice("ãƒ‡ãƒã‚¤ã‚¹ã®æ•°") << count;
+    ofLogNotice("ƒfƒoƒCƒX‚Ì”") << count;
 
     if (K4A_FAILED(k4a_device_open(K4A_DEVICE_DEFAULT, &device))) {
-        ofLogFatalError() << "Azure Kinect ãƒ‡ãƒã‚¤ã‚¹ã®ã‚ªãƒ¼ãƒ—ãƒ³ã«å¤±æ•—ã—ã¾ã—ãŸã€‚";
+        ofLogFatalError() << "Azure Kinect ƒfƒoƒCƒX‚ÌƒI[ƒvƒ“‚É¸”s‚µ‚Ü‚µ‚½B";
         return;
     }
 
@@ -26,22 +26,22 @@ void ofApp::setup() {
     deviceConfig.color_format = K4A_IMAGE_FORMAT_COLOR_BGRA32;
     deviceConfig.color_resolution = K4A_COLOR_RESOLUTION_OFF;
     if (K4A_FAILED(k4a_device_start_cameras(device, &deviceConfig))) {
-        ofLogFatalError() << "Kinectã‚«ãƒ¡ãƒ©ã®é–‹å§‹ã«å¤±æ•—ã—ã¾ã—ãŸã€‚";
+        ofLogFatalError() << "KinectƒJƒƒ‰‚ÌŠJn‚É¸”s‚µ‚Ü‚µ‚½B";
         return;
     }
 
     if (K4A_FAILED(k4a_device_get_calibration(device, deviceConfig.depth_mode, deviceConfig.color_resolution, &sensor_calibration))) {
-        ofLogFatalError() << "ã‚«ãƒ©ãƒ¼ãƒãƒ©ãƒ³ã‚¹ã®å–å¾—ã«å¤±æ•—ã—ã¾ã—ãŸã€‚";
+        ofLogFatalError() << "ƒJƒ‰[ƒoƒ‰ƒ“ƒX‚Ìæ“¾‚É¸”s‚µ‚Ü‚µ‚½B";
         return;
     }
 
     k4abt_tracker_configuration_t tracker_config = K4ABT_TRACKER_CONFIG_DEFAULT;
     if (K4A_FAILED(k4abt_tracker_create(&sensor_calibration, tracker_config, &tracker))) {
-        ofLogFatalError() << "Body Trackingã®åˆæœŸåŒ–ã«å¤±æ•—ã—ã¾ã—ãŸã€‚";
+        ofLogFatalError() << "Body Tracking‚Ì‰Šú‰»‚É¸”s‚µ‚Ü‚µ‚½B";
         return;
     }
-    
-    ofLogNotice() << "Body Trackingã®åˆæœŸåŒ–ã«æˆåŠŸã—ã¾ã—ãŸã€‚";
+
+    ofLogNotice() << "Body Tracking‚Ì‰Šú‰»‚É¬Œ÷‚µ‚Ü‚µ‚½B";
 
     loadConfig();
     sender.setup(ip, port);
@@ -50,11 +50,21 @@ void ofApp::setup() {
     m.addIntArg(1);
     sender.sendMessage(m);
 
+    //rotateAngle = 30;
+    //camFixDistance = 1200;
+    float angleRad = ofDegToRad(rotateAngle);
+    ofLogNotice("ra") << rotateAngle;
+    float camY = -camFixDistance * tan(angleRad);
+    ofLogNotice("camY") << camY;
+    cam.lookAt(ofVec3f(0, 0, 1000)); // ‘O•û•ûŒü‚ğŒ©‚é
+    cam.setPosition(0, camY, 0);
+    //cam.setDistance(1500);
+
 }
 
 
 void ofApp::exit() {
-    ofLogNotice() << "ãƒ‡ãƒã‚¤ã‚¹ã‚’çµ‚äº†";
+    ofLogNotice() << "ƒfƒoƒCƒX‚ğI—¹";
     ofxOscMessage m;
     m.setAddress("/end");
     m.addIntArg(1);
@@ -68,7 +78,7 @@ void ofApp::exit() {
 
 
 //--------------------------------------------------------------
-void ofApp::update(){
+void ofApp::update() {
     k4a_capture_t capture = nullptr;
     k4a_wait_result_t getCaptureResult = k4a_device_get_capture(device, &capture, 1000);
 
@@ -76,23 +86,23 @@ void ofApp::update(){
         k4a_image_t depth_image = k4a_capture_get_depth_image(capture);
         if (depth_image == NULL) {
             ofLogNotice() << "Failed to get depth image.";
+            depthGetErrorCount += 1;
+            if (depthGetErrorCount > 120) {
+                exit();
+                ofExit();
+            }
             return;
         }
+        depthGetErrorCount = 0;
+
 
         k4abt_frame_t bodyFrame = nullptr;
         k4a_wait_result_t popFrameResult = k4abt_tracker_pop_result(tracker, &bodyFrame, 0);
         if (popFrameResult == K4A_WAIT_RESULT_SUCCEEDED) {
 
-            // bodyFrame ã¯æœ‰åŠ¹
             uint32_t numBodies = k4abt_frame_get_num_bodies(bodyFrame);
-            // èªè­˜ã—ãŸ1äººã«ã¤ã„ã¦ã®ã¿å‡¦ç†
-            bodyNum = std::min(static_cast<int>(numBodies), 1);
+            bodyNum = numBodies;
 
-            //ofLogNotice() << "Number of bodies detected: " << numBodies;
-            
-
-            k4a_float2_t hand2D = { 0 };
-            int valid = 0;
 
             if (bodyNum == 0) {
                 stableCnt -= 1;
@@ -103,105 +113,126 @@ void ofApp::update(){
             else {
                 state = 1;
             }
-
             ofxOscMessage m;
             m.setAddress("/position/state");
             m.addIntArg(state);
             sender.sendMessage(m);
 
-            
+
+            k4a_float2_t hand2D = { 0 };
+            int valid = 0;
+            ofQuaternion rotation;
+            rotation.makeRotate(rotateAngle, ofVec3f(1, 0, 0));
+            ofMatrix4x4 rotationMatrix;
+            rotationMatrix.makeRotationMatrix(rotation);
 
             int latestDistance = limitDistance;
             for (uint32_t i = 0; i < bodyNum; i++)
             {
                 //cout << i + 1 << endl;
-                //ã‚¹ã‚±ãƒ«ãƒˆãƒ³ã®å–å¾—
+                //ƒXƒPƒ‹ƒgƒ“‚Ìæ“¾
                 k4abt_body_t body;
                 k4abt_frame_get_body_skeleton(bodyFrame, i, &body.skeleton);
                 body.id = k4abt_frame_get_body_id(bodyFrame, i);
+                //’†‰›‚ÉŒÀ’è
+                int bodyCenter = body.skeleton.joints[0].position.xyz.x;
+                if (bodyCenter < (sideAreaSize / 2) && bodyCenter > -(sideAreaSize / 2)) {
 
-                int baseDistance = body.skeleton.joints[0].position.xyz.z;
-                if (baseDistance < latestDistance) {
-                    latestDistance = baseDistance;
 
-                    joints.clear();
-                    stableCnt = 0;
+                    //ˆê”Ôæ“ª‚É‚¢‚él‚ÉŒÀ’è
+                    int baseDistance = body.skeleton.joints[0].position.xyz.z;
+                    if (baseDistance < latestDistance) {
+                        latestDistance = baseDistance;
 
-                    for (int joint = 0; joint < static_cast<int>(K4ABT_JOINT_COUNT); joint++) {
-                        if (body.skeleton.joints[joint].confidence_level >= K4ABT_JOINT_CONFIDENCE_LOW) {
-                            k4a_float3_t& jointPosition = body.skeleton.joints[joint].position;
-                            joints.push_back(ofVec3f(-jointPosition.xyz.x, -jointPosition.xyz.y, jointPosition.xyz.z));
+                        joints.clear();
+                        stableCnt = 0;
 
-                            // å³æ‰‹ã®åº§æ¨™è¨ˆç®—
-                            if (joint == K4ABT_JOINT_WRIST_RIGHT) {
-                                pos_rightHand = ofVec3f(-jointPosition.xyz.x, -jointPosition.xyz.y, jointPosition.xyz.z);
-                                r_pos2d = setJointPosInWindow(jointPosition);
+                        for (int joint = 0; joint < static_cast<int>(K4ABT_JOINT_COUNT); joint++) {
+                            if (body.skeleton.joints[joint].confidence_level >= K4ABT_JOINT_CONFIDENCE_LOW) {
+                                k4a_float3_t& jointPosition = body.skeleton.joints[joint].position;
+                                //joints.push_back(ofVec3f(-jointPosition.xyz.x, -jointPosition.xyz.y, jointPosition.xyz.z));
+                                ofVec3f jointPos = ofVec3f(-jointPosition.xyz.x, -jointPosition.xyz.y, jointPosition.xyz.z);
+                                // ‰ñ“]‚ğ“K—p
+                                jointPos = rotationMatrix.preMult(jointPos);
+                                joints.push_back(jointPos);
+
+                                // ‰Eè‚ÌÀ•WŒvZ
+                                if (joint == K4ABT_JOINT_WRIST_RIGHT) {
+                                    pos_rightHand = ofVec3f(jointPos);
+                                    r_pos2d = setJointPosInWindow(jointPosition);
+                                }
+
+                                // ¶è‚ÌÀ•WŒvZ
+                                if (joint == K4ABT_JOINT_WRIST_LEFT) {
+                                    pos_leftHand = ofVec3f(jointPos);
+                                    l_pos2d = setJointPosInWindow(jointPosition);
+                                }
+
+                                /*if (joint == K4ABT_JOINT_HEAD) {
+                                    camFixDistance = jointPos.z;
+                                }*/
+
                             }
-
-                            // å·¦æ‰‹ã®åº§æ¨™è¨ˆç®—
-                            if (joint == K4ABT_JOINT_WRIST_LEFT) {
-                                pos_leftHand = ofVec3f(-jointPosition.xyz.x, -jointPosition.xyz.y, jointPosition.xyz.z);
-                                l_pos2d = setJointPosInWindow(jointPosition);
-                            }
-
-                            
                         }
+
+                        //‰æ–Ê“à‚Ìc•ûŒü‚Ì’²®
+                        r_pos2d.y = r_pos2d.y - adjWinPosY;
+                        l_pos2d.y = l_pos2d.y - adjWinPosY;
+
+                        // ’†ŠÔˆÊ’u‚ÌÀ•WŒvZ
+                        c_pos2d = ofVec2f((int(float(r_pos2d.x + l_pos2d.x) / 2)), (int(float(r_pos2d.y + l_pos2d.y) / 2)));
+                        c_screenX = c_pos2d.x;
+                        c_screenY = c_pos2d.y;
+
+                        //”»’èˆÊ’u‚ÌŒˆ’è
+                        pos_diff = r_pos2d.distance(l_pos2d);
+                        if (pos_diff < diffThred) {
+                            d_pos2d = c_pos2d;
+                        }
+                        else {
+                            d_pos2d = ((l_pos2d.y - r_pos2d.y) < 0) ? l_pos2d : r_pos2d;
+                        }
+
+                        // ƒXƒ€[ƒWƒ“ƒO“K—p
+                        ofVec2f smoothedRightHand = getSmoothedPosition(rightHandHistory2d, r_pos2d);
+                        r_pos2d = smoothedRightHand;
+                        r_screenX = r_pos2d.x;
+                        r_screenY = r_pos2d.y;
+                        ofVec2f smoothedLeftHand = getSmoothedPosition(leftHandHistory2d, l_pos2d);
+                        l_pos2d = smoothedLeftHand;
+                        l_screenX = l_pos2d.x;
+                        l_screenY = l_pos2d.y;
+                        ofVec2f smoothedCenterHand = getSmoothedPosition(centerHandHistory2d, c_pos2d);
+                        c_pos2d = smoothedCenterHand;
+                        c_screenX = c_pos2d.x;
+                        c_screenY = c_pos2d.y;
+                        ofVec2f smoothedAdjustedHand = getSmoothedPosition(adjustedHandHistory2d, d_pos2d);
+                        d_pos2d = smoothedAdjustedHand;
+                        d_screenX = d_pos2d.x;
+                        d_screenY = d_pos2d.y;
+
+                        ofxOscMessage m1;
+                        m1.setAddress("/position/rightHand");
+                        m1.addIntArg(r_screenX);
+                        m1.addIntArg(r_screenY);
+                        sender.sendMessage(m1);
+                        ofxOscMessage m2;
+                        m2.setAddress("/position/leftHand");
+                        m2.addIntArg(l_screenX);
+                        m2.addIntArg(l_screenY);
+                        sender.sendMessage(m2);
+                        ofxOscMessage m3;
+                        m3.setAddress("/position/centerHand");
+                        m3.addIntArg(c_screenX);
+                        m3.addIntArg(c_screenY);
+                        sender.sendMessage(m3);
+                        ofxOscMessage m4;
+                        m4.setAddress("/position/adjustedHand");
+                        m4.addIntArg(d_screenX);
+                        m4.addIntArg(d_screenY);
+                        sender.sendMessage(m4);
+                        //ofLogNotice("Send OSC");
                     }
-
-                    // ä¸­é–“ä½ç½®ã®åº§æ¨™è¨ˆç®—
-                    c_pos2d = ofVec2f((int(float(r_pos2d.x + l_pos2d.x) / 2)), (int(float(r_pos2d.y + l_pos2d.y) / 2)));
-                    c_screenX = c_pos2d.x;
-                    c_screenY = c_pos2d.y;
-
-                    //åˆ¤å®šä½ç½®ã®æ±ºå®š
-                    pos_diff = r_pos2d.distance(l_pos2d);
-                    if (pos_diff < diffThred) {
-                        d_pos2d = c_pos2d;
-                    }
-                    else {
-                        d_pos2d = ((l_pos2d.y - r_pos2d.y) < 0) ? l_pos2d : r_pos2d;
-                    }
-
-                    // ã‚¹ãƒ ãƒ¼ã‚¸ãƒ³ã‚°é©ç”¨
-                    ofVec2f smoothedRightHand = getSmoothedPosition(rightHandHistory2d, r_pos2d);
-                    r_pos2d = smoothedRightHand;
-                    r_screenX = r_pos2d.x;
-                    r_screenY = r_pos2d.y;
-                    ofVec2f smoothedLeftHand = getSmoothedPosition(leftHandHistory2d, l_pos2d);
-                    l_pos2d = smoothedLeftHand;
-                    l_screenX = l_pos2d.x;
-                    l_screenY = l_pos2d.y;
-                    ofVec2f smoothedCenterHand = getSmoothedPosition(centerHandHistory2d, c_pos2d);
-                    c_pos2d = smoothedCenterHand;
-                    c_screenX = c_pos2d.x;
-                    c_screenY = c_pos2d.y;
-                    ofVec2f smoothedAdjustedHand = getSmoothedPosition(adjustedHandHistory2d, d_pos2d);
-                    d_pos2d = smoothedAdjustedHand;
-                    d_screenX = d_pos2d.x;
-                    d_screenY = d_pos2d.y;
-                    
-
-                    ofxOscMessage m1;
-                    m1.setAddress("/position/rightHand");
-                    m1.addIntArg(r_screenX);
-                    m1.addIntArg(r_screenY);
-                    sender.sendMessage(m1);
-                    ofxOscMessage m2;
-                    m2.setAddress("/position/leftHand");
-                    m2.addIntArg(l_screenX);
-                    m2.addIntArg(l_screenY);
-                    sender.sendMessage(m2);
-                    ofxOscMessage m3;
-                    m2.setAddress("/position/centerHand");
-                    m2.addIntArg(c_screenX);
-                    m2.addIntArg(c_screenY);
-                    sender.sendMessage(m3);
-                    ofxOscMessage m4;
-                    m2.setAddress("/position/adjustedHand");
-                    m2.addIntArg(d_screenX);
-                    m2.addIntArg(d_screenY);
-                    sender.sendMessage(m4);
-                    ofLogNotice("Send OSC");
                 }
 
             }
@@ -209,12 +240,12 @@ void ofApp::update(){
             k4abt_frame_release(bodyFrame);
         }
 
-        //æ·±åº¦ç”»åƒã®ä½œæˆ
+        //[“x‰æ‘œ‚Ìì¬
         if (depth_image != NULL) {
             depthTexture = setDepthToTex(depth_image);
         }
 
-        // ç”»åƒã®ãƒ¡ãƒ¢ãƒªè§£æ”¾
+        // ‰æ‘œ‚Ìƒƒ‚ƒŠ‰ğ•ú
         k4a_image_release(depth_image);
         k4a_wait_result_t queueCaptureResult = k4abt_tracker_enqueue_capture(tracker, capture, 0);
         k4a_capture_release(capture);
@@ -236,31 +267,40 @@ void ofApp::update(){
 }
 
 //--------------------------------------------------------------
-void ofApp::draw(){
+void ofApp::draw() {
     ofSetColor(ofColor::white);
-    // ã‚«ãƒ©ãƒ¼ç”»åƒã‚’è¡¨ç¤º
+    // ƒJƒ‰[‰æ‘œ‚ğ•\¦
     int winW = ofGetWidth();
     int winH = ofGetHeight();
     if (depthTexture.isAllocated()) {
         depthTexture.draw(0, 0, winW, winH);
     }
 
-    // æç”»
-    cam.begin(); // 3Dã‚«ãƒ¡ãƒ©ã®é–‹å§‹
-    cam.setPosition(0, 0, 0);
-    cam.lookAt(ofVec3f(0, 0, 1000)); // å‰æ–¹æ–¹å‘ã‚’è¦‹ã‚‹
+    // •`‰æ
+    cam.begin(); // 3DƒJƒƒ‰‚ÌŠJn
 
+    
 
-    // é–¢ç¯€ã®æç”»
+    // X²iÔFj
+    ofSetColor(255, 0, 0);
+    ofDrawArrow(ofVec3f(0, 0, 0), ofVec3f(200, 0, 0), 10);
+    // Y²i—ÎFj
+    ofSetColor(0, 255, 0);
+    ofDrawArrow(ofVec3f(0, 0, 0), ofVec3f(0, 200, 0), 10);
+    // Z²iÂFj
     ofSetColor(0, 0, 255);
-    ofDrawSphere(0, 0,1500, 10);
+    ofDrawArrow(ofVec3f(0, 0, 0), ofVec3f(0, 0, 200), 10);
+
+    // ŠÖß‚Ì•`‰æ
+    ofSetColor(0, 0, 255);
+    ofDrawSphere(0, 0, 1500, 10);
     if (joints.size() > 0) {
         ofSetColor(180, 0, 0);
         for (const auto& joint : joints) {
-            ofDrawSphere(joint, 10); // é–¢ç¯€ã‚’çƒä½“ã§æç”»
+            ofDrawSphere(joint, 10); // ŠÖß‚ğ‹…‘Ì‚Å•`‰æ
         }
 
-        // é–¢ç¯€é–“ã®ç·šã‚’æç”»ï¼ˆå¿…è¦ã«å¿œã˜ã¦è¿½åŠ ï¼‰
+        // ŠÖßŠÔ‚Ìü‚ğ•`‰æi•K—v‚É‰‚¶‚Ä’Ç‰Áj
         for (int i = 0; i < joints.size() - 1; i++) {
             ofDrawLine(joints[i], joints[i + 1]);
         }
@@ -274,9 +314,9 @@ void ofApp::draw(){
     ofDrawSphere(pos_leftHand, 50);
     ofDrawBitmapStringHighlight("Center", pos_leftHand, 50);*/
 
-    cam.end(); // 3Dã‚«ãƒ¡ãƒ©ã®çµ‚äº†
+    cam.end(); // 3DƒJƒƒ‰‚ÌI—¹
 
-    // ç”»é¢å†…ã®ä½ç½®ã®æç”»
+    // ‰æ–Ê“à‚ÌˆÊ’u‚Ì•`‰æ
     ofSetColor(0, 255, 0);
     ofDrawCircle(l_pos2d, 20);
     ofDrawCircle(r_pos2d, 20);
@@ -284,17 +324,19 @@ void ofApp::draw(){
     ofDrawCircle(c_pos2d, 20);
     ofSetColor(255, 0, 0);
     ofDrawCircle(d_pos2d, 16);
-    ofDrawBitmapStringHighlight("diff:" +ofToString(pos_diff), c_pos2d);
+    ofDrawBitmapStringHighlight("diff:" + ofToString(pos_diff), c_pos2d);
 
-    //ç¢ºèªç”¨ã®ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿
+    //Šm”F—p‚Ìƒpƒ‰ƒ[ƒ^
     int fps = ofGetFrameRate();
     ofDrawBitmapStringHighlight(ofToString(fps), 10, 20);
-    ofDrawBitmapStringHighlight("BodyNum" +ofToString(bodyNum), 10, 40);
+    ofDrawBitmapStringHighlight("BodyNum" + ofToString(bodyNum), 10, 40);
     ofDrawBitmapStringHighlight("State" + ofToString(state), 120, 40);
     ofDrawBitmapStringHighlight("RightHand screenX: " + ofToString(r_screenX), 10, 60);
     ofDrawBitmapStringHighlight("RightHand screenY: " + ofToString(r_screenY), 10, 80);
-    ofDrawBitmapStringHighlight("LeftHand screenX: " + ofToString(l_screenX), 10, 140);
-    ofDrawBitmapStringHighlight("LeftHand screenY : " + ofToString(l_screenY), 10, 160);
+    ofDrawBitmapStringHighlight("LeftHand screenX: " + ofToString(l_screenX), 10, 100);
+    ofDrawBitmapStringHighlight("LeftHand screenY : " + ofToString(l_screenY), 10, 120);
+    ofDrawBitmapStringHighlight("Center screenX: " + ofToString(c_screenX), 10, 140);
+    ofDrawBitmapStringHighlight("Center screenY : " + ofToString(c_screenY), 10, 160);
     ofDrawBitmapStringHighlight("LatestDistance : " + ofToString(latestDistance), 10, 200);
 }
 
@@ -327,11 +369,11 @@ ofTexture ofApp::setDepthToTex(k4a_image_t img) {
     ofShortPixels depthPixels;
     depthPixels.setFromExternalPixels((unsigned short*)k4a_image_get_buffer(img), width, height, 1);
 
-    // æ·±åº¦ç”»åƒã‚’æ­£è¦åŒ–ã—ã¦æç”»å¯èƒ½ãªå½¢å¼ã«å¤‰æ›
+    // [“x‰æ‘œ‚ğ³‹K‰»‚µ‚Ä•`‰æ‰Â”\‚ÈŒ`®‚É•ÏŠ·
     unsigned char* depthPix = new unsigned char[width * height];
     for (int i = 0; i < width * height; i++) {
-        depthPix[i] = (depthPixels[i] > 500) ? ofMap(depthPixels[i], 500, 2500, 255, 0, true) : 0;  // é©åˆ‡ãªå€¤ã«èª¿æ•´
-        
+        depthPix[i] = (depthPixels[i] > 500) ? ofMap(depthPixels[i], 500, 2500, 255, 0, true) : 0;  // “KØ‚È’l‚É’²®
+
     }
 
     tex.loadData(depthPix, width, height, GL_LUMINANCE);
@@ -339,17 +381,17 @@ ofTexture ofApp::setDepthToTex(k4a_image_t img) {
     return tex;
 }
 
-// --- ç§»å‹•å¹³å‡ã‚’è¨ˆç®—ã™ã‚‹é–¢æ•° ---
+// --- ˆÚ“®•½‹Ï‚ğŒvZ‚·‚éŠÖ” ---
 ofVec2f  ofApp::getSmoothedPosition(std::deque<ofVec2f>& history, ofVec2f newPos) {
-    // æœ€æ–°ã®ãƒ‡ãƒ¼ã‚¿ã‚’è¿½åŠ 
+    // ÅV‚Ìƒf[ƒ^‚ğ’Ç‰Á
     history.push_back(newPos);
 
-    // å±¥æ­´ãŒè¨­å®šå€¤ã‚ˆã‚Šå¤šã‘ã‚Œã°æœ€ã‚‚å¤ã„ãƒ‡ãƒ¼ã‚¿ã‚’å‰Šé™¤
+    // —š—ğ‚ªİ’è’l‚æ‚è‘½‚¯‚ê‚ÎÅ‚àŒÃ‚¢ƒf[ƒ^‚ğíœ
     if (history.size() > smoothingFrames) {
         history.pop_front();
     }
 
-    // å¹³å‡å€¤ã‚’è¨ˆç®—
+    // •½‹Ï’l‚ğŒvZ
     ofVec2f smoothedPos(0, 0);
     for (const auto& pos : history) {
         smoothedPos += pos;
@@ -365,23 +407,23 @@ ofVec2f ofApp::setJointPosInWindow(k4a_float3_t& jointPosition) {
     k4a_float2_t hand2D = { 0 };
     int valid = 0;
 
-        k4a_result_t result = k4a_calibration_3d_to_2d(
-            &sensor_calibration,
-            &jointPosition,
-            K4A_CALIBRATION_TYPE_DEPTH, // Depthã‚«ãƒ¡ãƒ©ç©ºé–“ã§ã®å¤‰æ›
-            K4A_CALIBRATION_TYPE_DEPTH, // 2Dåº§æ¨™ã‚’ã‚«ãƒ©ãƒ¼ç”»åƒã«ãƒãƒƒãƒ”ãƒ³ã‚°
-            &hand2D,
-            &valid);
-        if (result == K4A_RESULT_SUCCEEDED)
-        {
-            screenX = hand2D.xy.x;
-            screenY = hand2D.xy.y;
-        }
-        else
-        {
-            ofLogNotice("Failed to project 3D position to 2D!");
-        }
-        return ofVec2f(screenX, screenY);
+    k4a_result_t result = k4a_calibration_3d_to_2d(
+        &sensor_calibration,
+        &jointPosition,
+        K4A_CALIBRATION_TYPE_DEPTH, // DepthƒJƒƒ‰‹óŠÔ‚Å‚Ì•ÏŠ·
+        K4A_CALIBRATION_TYPE_DEPTH, // 2DÀ•W‚ğƒJƒ‰[‰æ‘œ‚Éƒ}ƒbƒsƒ“ƒO
+        &hand2D,
+        &valid);
+    if (result == K4A_RESULT_SUCCEEDED)
+    {
+        screenX = hand2D.xy.x;
+        screenY = hand2D.xy.y;
+    }
+    else
+    {
+        ofLogNotice("Failed to project 3D position to 2D!");
+    }
+    return ofVec2f(screenX, screenY);
 }
 
 void ofApp::loadConfig() {
@@ -397,59 +439,63 @@ void ofApp::loadConfig() {
     limitDistance = json["distance"].asInt();
     diffThred = json["diffThred"].asInt();
     smoothingFrames = json["smoothingFrames"].asInt();
+    camFixDistance = json["standPosition"].asInt();
+    rotateAngle = json["rotateAngle"].asFloat();
+    adjWinPosY = json["adjWinPosY"].asInt();
+    sideAreaSize = json["sideAreaSize"].asInt();
 }
 
 //--------------------------------------------------------------
-void ofApp::keyPressed(int key){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::keyReleased(int key){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseMoved(int x, int y ){
+void ofApp::keyPressed(int key) {
 
 }
 
 //--------------------------------------------------------------
-void ofApp::mouseDragged(int x, int y, int button){
+void ofApp::keyReleased(int key) {
 
 }
 
 //--------------------------------------------------------------
-void ofApp::mousePressed(int x, int y, int button){
+void ofApp::mouseMoved(int x, int y) {
 
 }
 
 //--------------------------------------------------------------
-void ofApp::mouseReleased(int x, int y, int button){
+void ofApp::mouseDragged(int x, int y, int button) {
 
 }
 
 //--------------------------------------------------------------
-void ofApp::mouseEntered(int x, int y){
+void ofApp::mousePressed(int x, int y, int button) {
 
 }
 
 //--------------------------------------------------------------
-void ofApp::mouseExited(int x, int y){
+void ofApp::mouseReleased(int x, int y, int button) {
 
 }
 
 //--------------------------------------------------------------
-void ofApp::windowResized(int w, int h){
+void ofApp::mouseEntered(int x, int y) {
 
 }
 
 //--------------------------------------------------------------
-void ofApp::gotMessage(ofMessage msg){
+void ofApp::mouseExited(int x, int y) {
 
 }
 
 //--------------------------------------------------------------
-void ofApp::dragEvent(ofDragInfo dragInfo){ 
+void ofApp::windowResized(int w, int h) {
+
+}
+
+//--------------------------------------------------------------
+void ofApp::gotMessage(ofMessage msg) {
+
+}
+
+//--------------------------------------------------------------
+void ofApp::dragEvent(ofDragInfo dragInfo) {
 
 }

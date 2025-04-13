@@ -38,10 +38,20 @@ class ofApp : public ofBaseApp{
 		k4a_device_configuration_t deviceConfig = K4A_DEVICE_CONFIG_INIT_DISABLE_ALL;
 		k4a_calibration_t sensor_calibration;
 		int bodyNum = 0;
-		float r_screenX = 0;
-		float r_screenY = 0;
-		float l_screenX = 0;
-		float l_screenY = 0;
+		int r_screenX = 0;
+		int r_screenY = 0;
+		int l_screenX = 0;
+		int l_screenY = 0;
+		int c_screenX = 0;
+		int c_screenY = 0;
+		int d_screenX = 0;
+		int d_screenY = 0;
+
+		ofVec2f r_pos2d;
+		ofVec2f l_pos2d;
+		ofVec2f c_pos2d;
+		int pos_diff = 0;
+		ofVec2f d_pos2d;
 		ofVec2f setJointPosInWindow( k4a_float3_t& jointPosition);
 
 		ofTexture colorTexture;
@@ -64,6 +74,21 @@ class ofApp : public ofBaseApp{
 		std::string ip;
 		int port;
 		int limitDistance = 0;
+		int diffThred = 100;
+		int smoothingFrames = 6; // 平均を取るフレーム数（約1秒）
+		int camFixDistance = 0; //カメラ位置調整用
+		int adjWinPosY = 0;
+		float rotateAngle = 0; //回転角度
+		int sideAreaSize = 1000;
 		void loadConfig();
+
+		//時間平均
+		std::deque<ofVec2f> rightHandHistory2d;
+		std::deque<ofVec2f> leftHandHistory2d;
+		std::deque<ofVec2f> centerHandHistory2d;
+		std::deque<ofVec2f> adjustedHandHistory2d;
+		ofVec2f getSmoothedPosition(std::deque<ofVec2f>& history, ofVec2f newPos);
+
+		int depthGetErrorCount = 0;
 		
 };
