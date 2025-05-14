@@ -16,7 +16,7 @@ void ofApp::setup() {
 
     float angleRad = ofDegToRad(rotateAngle);
     float camY = -camFixDistance * tan(angleRad);
-    cam.lookAt(ofVec3f(0, 0, 1000)); // ï¿½Oï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    cam.lookAt(ofVec3f(0, 0, 1000)); // ‘O•û•ûŒü‚ğŒ©‚é
     cam.setPosition(0, camY, 0);
 
 }
@@ -28,8 +28,8 @@ void ofApp::exit() {
 
 void ofApp::closeDevice() {
    
-	ofLogNotice() << "ï¿½fï¿½oï¿½Cï¿½Xï¿½ï¿½Â‚ï¿½ï¿½ï¿½";
-	ofLogNotice() << "ï¿½fï¿½oï¿½Cï¿½Xï¿½ï¿½ï¿½Iï¿½ï¿½";
+	ofLogNotice() << "ƒfƒoƒCƒX‚ğ•Â‚¶‚é";
+	ofLogNotice() << "ƒfƒoƒCƒX‚ğI—¹";
 	//ofxOscMessage m;
 	//m.setAddress("/end");
 	//m.addIntArg(1);
@@ -40,7 +40,7 @@ void ofApp::closeDevice() {
 		k4abt_tracker_destroy(tracker);
 		tracker = nullptr;
 	}
-	ofLogNotice() << "ï¿½gï¿½ï¿½ï¿½bï¿½Jï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½";
+	ofLogNotice() << "ƒgƒ‰ƒbƒJ[‰Šú‰»";
 
 	if (device != nullptr) {
 		k4a_device_stop_cameras(device);
@@ -50,13 +50,13 @@ void ofApp::closeDevice() {
 }
 
 void ofApp::connect() {
-	ofLogNotice() << "ï¿½fï¿½oï¿½Cï¿½Xï¿½ÌÚ‘ï¿½ï¿½ï¿½ï¿½Jï¿½nï¿½B";
+	ofLogNotice() << "ƒfƒoƒCƒX‚ÌÚ‘±‚ğŠJnB";
 
 	uint32_t count = k4a_device_get_installed_count();
-	ofLogNotice("ï¿½fï¿½oï¿½Cï¿½Xï¿½Ìï¿½") << count;
+	ofLogNotice("ƒfƒoƒCƒX‚Ì”") << count;
 
 	if (K4A_FAILED(k4a_device_open(K4A_DEVICE_DEFAULT, &device))) {
-		ofLogFatalError() << "Azure Kinect ï¿½fï¿½oï¿½Cï¿½Xï¿½ÌƒIï¿½[ï¿½vï¿½ï¿½ï¿½Éï¿½ï¿½sï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ï¿½B";
+		ofLogFatalError() << "Azure Kinect ƒfƒoƒCƒX‚ÌƒI[ƒvƒ“‚É¸”s‚µ‚Ü‚µ‚½B";
 		ofExit();
 		return;
 	}
@@ -74,25 +74,25 @@ void ofApp::connect() {
 	deviceConfig.color_format = K4A_IMAGE_FORMAT_COLOR_BGRA32;
 	deviceConfig.color_resolution = K4A_COLOR_RESOLUTION_OFF;
 	if (K4A_FAILED(k4a_device_start_cameras(device, &deviceConfig))) {
-		ofLogFatalError() << "Kinectï¿½Jï¿½ï¿½ï¿½ï¿½ï¿½ÌŠJï¿½nï¿½Éï¿½ï¿½sï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ï¿½B";
+		ofLogFatalError() << "KinectƒJƒƒ‰‚ÌŠJn‚É¸”s‚µ‚Ü‚µ‚½B";
 		ofExit();
 		return;
 	}
 
 	if (K4A_FAILED(k4a_device_get_calibration(device, deviceConfig.depth_mode, deviceConfig.color_resolution, &sensor_calibration))) {
-		ofLogFatalError() << "ï¿½Jï¿½ï¿½ï¿½[ï¿½oï¿½ï¿½ï¿½ï¿½ï¿½Xï¿½Ìæ“¾ï¿½Éï¿½ï¿½sï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ï¿½B";
+		ofLogFatalError() << "ƒJƒ‰[ƒoƒ‰ƒ“ƒX‚Ìæ“¾‚É¸”s‚µ‚Ü‚µ‚½B";
 		ofExit();
 		return;
 	}
 
 	k4abt_tracker_configuration_t tracker_config = K4ABT_TRACKER_CONFIG_DEFAULT;
 	if (K4A_FAILED(k4abt_tracker_create(&sensor_calibration, tracker_config, &tracker))) {
-		ofLogFatalError() << "Body Trackingï¿½Ìï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Éï¿½ï¿½sï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ï¿½B";
+		ofLogFatalError() << "Body Tracking‚Ì‰Šú‰»‚É¸”s‚µ‚Ü‚µ‚½B";
 		ofExit();
 		return;
 	}
 
-	ofLogNotice() << "Body Trackingï¿½Ìï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Éï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ï¿½B";
+	ofLogNotice() << "Body Tracking‚Ì‰Šú‰»‚É¬Œ÷‚µ‚Ü‚µ‚½B";
 	
 	deviceTimeoutCount = 0;
 	isReconnecting = false;
@@ -101,7 +101,7 @@ void ofApp::connect() {
 void ofApp::reconnect() {
 	isReconnecting = true;
 	closeDevice();
-	ofLogNotice() << "ï¿½ÄÚ‘ï¿½ï¿½ï¿½ï¿½Jï¿½nï¿½B";
+	ofLogNotice() << "ÄÚ‘±‚ğŠJnB";
 	connect();
 }
 
@@ -170,15 +170,15 @@ void ofApp::update() {
 
 				int latestDistance = limitDistance;
 				for (uint32_t i = 0; i < bodyNum; i++) {
-					//ï¿½Xï¿½Pï¿½ï¿½ï¿½gï¿½ï¿½ï¿½Ìæ“¾
+					//ƒXƒPƒ‹ƒgƒ“‚Ìæ“¾
 					k4abt_body_t body;
 					k4abt_frame_get_body_skeleton(bodyFrame, i, &body.skeleton);
 					body.id = k4abt_frame_get_body_id(bodyFrame, i);
-					//ï¿½ï¿½ï¿½ï¿½ï¿½ÉŒï¿½ï¿½ï¿½
+					//’†‰›‚ÉŒÀ’è
 					int bodyCenter = body.skeleton.joints[0].position.xyz.x;
 					if (bodyCenter < (sideAreaSize / 2) && bodyCenter > -(sideAreaSize / 2)) {
 
-						//ï¿½ï¿½Ôæ“ªï¿½É‚ï¿½ï¿½ï¿½lï¿½ÉŒï¿½ï¿½ï¿½
+						//ˆê”Ôæ“ª‚É‚¢‚él‚ÉŒÀ’è
 						int baseDistance = body.skeleton.joints[0].position.xyz.z;
 						if (baseDistance < latestDistance) {
 							latestDistance = baseDistance;
@@ -191,17 +191,17 @@ void ofApp::update() {
 									k4a_float3_t & jointPosition = body.skeleton.joints[joint].position;
 									//joints.push_back(ofVec3f(-jointPosition.xyz.x, -jointPosition.xyz.y, jointPosition.xyz.z));
 									ofVec3f jointPos = ofVec3f(-jointPosition.xyz.x, -jointPosition.xyz.y, jointPosition.xyz.z);
-									// ï¿½ï¿½]ï¿½ï¿½Kï¿½p
+									// ‰ñ“]‚ğ“K—p
 									jointPos = rotationMatrix.preMult(jointPos);
 									joints.push_back(jointPos);
 
-									// ï¿½Eï¿½ï¿½Ìï¿½ï¿½Wï¿½vï¿½Z
+									// ‰Eè‚ÌÀ•WŒvZ
 									if (joint == K4ABT_JOINT_WRIST_RIGHT) {
 										pos_rightHand = ofVec3f(jointPos);
 										r_pos2d = setJointPosInWindow(jointPosition);
 									}
 
-									// ï¿½ï¿½ï¿½ï¿½Ìï¿½ï¿½Wï¿½vï¿½Z
+									// ¶è‚ÌÀ•WŒvZ
 									if (joint == K4ABT_JOINT_WRIST_LEFT) {
 										pos_leftHand = ofVec3f(jointPos);
 										l_pos2d = setJointPosInWindow(jointPosition);
@@ -213,16 +213,16 @@ void ofApp::update() {
 								}
 							}
 
-							//ï¿½ï¿½Ê“ï¿½ï¿½Ìcï¿½ï¿½ï¿½ï¿½ï¿½Ì’ï¿½ï¿½ï¿½
+							//‰æ–Ê“à‚Ìc•ûŒü‚Ì’²®
 							r_pos2d.y = r_pos2d.y - adjWinPosY;
 							l_pos2d.y = l_pos2d.y - adjWinPosY;
 
-							// ï¿½ï¿½ï¿½ÔˆÊ’uï¿½Ìï¿½ï¿½Wï¿½vï¿½Z
+							// ’†ŠÔˆÊ’u‚ÌÀ•WŒvZ
 							c_pos2d = ofVec2f((int(float(r_pos2d.x + l_pos2d.x) / 2)), (int(float(r_pos2d.y + l_pos2d.y) / 2)));
 							c_screenX = c_pos2d.x;
 							c_screenY = c_pos2d.y;
 
-							//ï¿½ï¿½ï¿½ï¿½Ê’uï¿½ÌŒï¿½ï¿½ï¿½
+							//”»’èˆÊ’u‚ÌŒˆ’è
 							pos_diff = r_pos2d.distance(l_pos2d);
 							if (pos_diff < diffThred) {
 								d_pos2d = c_pos2d;
@@ -231,7 +231,7 @@ void ofApp::update() {
 								d_pos2d = ((l_pos2d.y - r_pos2d.y) < 0) ? l_pos2d : r_pos2d;
 							}
 
-							// ï¿½Xï¿½ï¿½ï¿½[ï¿½Wï¿½ï¿½ï¿½Oï¿½Kï¿½p
+							// ƒXƒ€[ƒWƒ“ƒO“K—p
 							ofVec2f smoothedRightHand = getSmoothedPosition(rightHandHistory2d, r_pos2d);
 							r_pos2d = smoothedRightHand;
 							r_screenX = r_pos2d.x;
@@ -277,12 +277,12 @@ void ofApp::update() {
 				k4abt_frame_release(bodyFrame);
 			}
 
-			//ï¿½[ï¿½xï¿½æ‘œï¿½Ìì¬
+			//[“x‰æ‘œ‚Ìì¬
 			if (depth_image != NULL) {
 				depthTexture = setDepthToTex(depth_image);
 			}
 
-			// ï¿½æ‘œï¿½Ìƒï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+			// ‰æ‘œ‚Ìƒƒ‚ƒŠ‰ğ•ú
 			k4a_image_release(depth_image);
 			k4a_image_release(ir_image);
 			k4a_wait_result_t queueCaptureResult = k4abt_tracker_enqueue_capture(tracker, capture, 0);
@@ -293,17 +293,17 @@ void ofApp::update() {
 			}
 
 		} else if (getCaptureResult == K4A_WAIT_RESULT_FAILED) {
-			ofLogFatalError() << "ï¿½fï¿½oï¿½Cï¿½Xï¿½ï¿½ï¿½ï¿½ÌƒLï¿½ï¿½ï¿½vï¿½`ï¿½ï¿½ï¿½æ“¾ï¿½Éï¿½ï¿½sï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ï¿½iK4A_WAIT_RESULT_FAILEDï¿½jï¿½Bï¿½Aï¿½vï¿½ï¿½ï¿½Pï¿½[ï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½B";
+			ofLogFatalError() << "ƒfƒoƒCƒX‚©‚ç‚ÌƒLƒƒƒvƒ`ƒƒæ“¾‚É¸”s‚µ‚Ü‚µ‚½iK4A_WAIT_RESULT_FAILEDjBƒAƒvƒŠƒP[ƒVƒ‡ƒ“‚ğI—¹‚µ‚Ü‚·B";
 			closeDevice();
 			ofExit();
 			return;
 		} else if (getCaptureResult == K4A_WAIT_RESULT_TIMEOUT) {
-			// ï¿½^ï¿½Cï¿½ï¿½ï¿½Aï¿½Eï¿½gï¿½Ìê‡ï¿½Í–ï¿½ï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Íƒï¿½ï¿½gï¿½ï¿½ï¿½C
-			ofLogNotice() << "ï¿½Lï¿½ï¿½ï¿½vï¿½`ï¿½ï¿½ï¿½æ“¾ï¿½ï¿½ï¿½^ï¿½Cï¿½ï¿½ï¿½Aï¿½Eï¿½gï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ï¿½B( K4A_WAIT_RESULT_TIMEOUT)" << deviceTimeoutCount;
+			// ƒ^ƒCƒ€ƒAƒEƒg‚Ìê‡‚Í–³‹A‚à‚µ‚­‚ÍƒŠƒgƒ‰ƒC
+			ofLogNotice() << "ƒLƒƒƒvƒ`ƒƒæ“¾‚ªƒ^ƒCƒ€ƒAƒEƒg‚µ‚Ü‚µ‚½B( K4A_WAIT_RESULT_TIMEOUT)" << deviceTimeoutCount;
 
 			deviceTimeoutCount += 1;
 			if (deviceTimeoutCount > timeoutThreshold) {
-				ofLogFatalError() << "ï¿½^ï¿½Cï¿½ï¿½ï¿½Aï¿½Eï¿½gï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ï¿½Bï¿½fï¿½oï¿½Cï¿½Xï¿½ï¿½ï¿½Vï¿½ï¿½ï¿½bï¿½gï¿½_ï¿½Eï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½ÄÚ‘ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½İ‚Ü‚ï¿½ï¿½B ";
+				ofLogFatalError() << "ƒ^ƒCƒ€ƒAƒEƒg‚ª˜A‘±‚µ‚Ü‚µ‚½BƒfƒoƒCƒX‚ğƒVƒƒƒbƒgƒ_ƒEƒ“‚µAÄÚ‘±‚ğ‚İ‚Ü‚·B ";
 				reconnect();
 			}
 			return;
@@ -315,7 +315,7 @@ void ofApp::update() {
 //--------------------------------------------------------------
 void ofApp::draw() {
     ofSetColor(ofColor::white);
-    // ï¿½Jï¿½ï¿½ï¿½[ï¿½æ‘œï¿½ï¿½\ï¿½ï¿½
+    // ƒJƒ‰[‰æ‘œ‚ğ•\¦
     int winW = ofGetWidth();
     int winH = ofGetHeight();
     if (depthTexture.isAllocated()) {
@@ -324,38 +324,38 @@ void ofApp::draw() {
 
 	if (!isReconnecting) {
 
-		// ï¿½`ï¿½ï¿½
-		cam.begin(); // 3Dï¿½Jï¿½ï¿½ï¿½ï¿½ï¿½ÌŠJï¿½n
+		// •`‰æ
+		cam.begin(); // 3DƒJƒƒ‰‚ÌŠJn
 
-		// Xï¿½ï¿½ï¿½iï¿½ÔFï¿½j
+		// X²iÔFj
 		ofSetColor(255, 0, 0);
 		ofDrawArrow(ofVec3f(0, 0, 0), ofVec3f(200, 0, 0), 10);
-		// Yï¿½ï¿½ï¿½iï¿½ÎFï¿½j
+		// Y²i—ÎFj
 		ofSetColor(0, 255, 0);
 		ofDrawArrow(ofVec3f(0, 0, 0), ofVec3f(0, 200, 0), 10);
-		// Zï¿½ï¿½ï¿½iï¿½ÂFï¿½j
+		// Z²iÂFj
 		ofSetColor(0, 0, 255);
 		ofDrawArrow(ofVec3f(0, 0, 0), ofVec3f(0, 0, 200), 10);
 
-		// ï¿½Öß‚Ì•`ï¿½ï¿½
+		// ŠÖß‚Ì•`‰æ
 		ofSetColor(0, 0, 255);
 		ofDrawSphere(0, 0, 1500, 10);
 		ofLogNotice("joints size") << joints.size();
 		if (joints.size() > 0) {
 			ofSetColor(180, 0, 0);
 			for (const auto & joint : joints) {
-				ofDrawSphere(joint, 10); // ï¿½Öß‚ï¿½ï¿½ï¿½ï¿½Ì‚Å•`ï¿½ï¿½
+				ofDrawSphere(joint, 10); // ŠÖß‚ğ‹…‘Ì‚Å•`‰æ
 			}
 
-			// ï¿½ÖßŠÔ‚Ìï¿½ï¿½ï¿½`ï¿½ï¿½iï¿½Kï¿½vï¿½É‰ï¿½ï¿½ï¿½ï¿½Ä’Ç‰ï¿½ï¿½j
+			// ŠÖßŠÔ‚Ìü‚ğ•`‰æi•K—v‚É‰‚¶‚Ä’Ç‰Áj
 			for (int i = 0; i < joints.size() - 1; i++) {
 				ofDrawLine(joints[i], joints[i + 1]);
 			}
 		}
 
-		cam.end(); // 3Dï¿½Jï¿½ï¿½ï¿½ï¿½ï¿½ÌIï¿½ï¿½
+		cam.end(); // 3DƒJƒƒ‰‚ÌI—¹
 
-		// ï¿½ï¿½Ê“ï¿½ï¿½ÌˆÊ’uï¿½Ì•`ï¿½ï¿½
+		// ‰æ–Ê“à‚ÌˆÊ’u‚Ì•`‰æ
 		ofSetColor(0, 255, 0);
 		ofDrawCircle(l_pos2d, 20);
 		ofDrawCircle(r_pos2d, 20);
@@ -366,7 +366,7 @@ void ofApp::draw() {
 		ofDrawBitmapStringHighlight("diff:" + ofToString(pos_diff), c_pos2d);
 	}
 
-    //ï¿½mï¿½Fï¿½pï¿½Ìƒpï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½^
+    //Šm”F—p‚Ìƒpƒ‰ƒ[ƒ^
     int fps = ofGetFrameRate();
     ofDrawBitmapStringHighlight(ofToString(fps), 10, 20);
     ofDrawBitmapStringHighlight("BodyNum" + ofToString(bodyNum), 10, 40);
@@ -409,10 +409,10 @@ ofTexture ofApp::setDepthToTex(k4a_image_t img) {
     ofShortPixels depthPixels;
     depthPixels.setFromExternalPixels((unsigned short*)k4a_image_get_buffer(img), width, height, 1);
 
-    // ï¿½[ï¿½xï¿½æ‘œï¿½ğ³‹Kï¿½ï¿½ï¿½ï¿½ï¿½Ä•`ï¿½ï¿½Â”\ï¿½ÈŒ`ï¿½ï¿½ï¿½É•ÏŠï¿½
+    // [“x‰æ‘œ‚ğ³‹K‰»‚µ‚Ä•`‰æ‰Â”\‚ÈŒ`®‚É•ÏŠ·
     unsigned char* depthPix = new unsigned char[width * height];
     for (int i = 0; i < width * height; i++) {
-        depthPix[i] = (depthPixels[i] > 500) ? ofMap(depthPixels[i], 500, 2500, 255, 0, true) : 0;  // ï¿½Kï¿½Ø‚È’lï¿½É’ï¿½ï¿½ï¿½
+        depthPix[i] = (depthPixels[i] > 500) ? ofMap(depthPixels[i], 500, 2500, 255, 0, true) : 0;  // “KØ‚È’l‚É’²®
 
     }
 
@@ -421,17 +421,17 @@ ofTexture ofApp::setDepthToTex(k4a_image_t img) {
     return tex;
 }
 
-// --- ï¿½Ú“ï¿½ï¿½ï¿½ï¿½Ï‚ï¿½ï¿½vï¿½Zï¿½ï¿½ï¿½ï¿½Öï¿½ ---
+// --- ˆÚ“®•½‹Ï‚ğŒvZ‚·‚éŠÖ” ---
 ofVec2f  ofApp::getSmoothedPosition(std::deque<ofVec2f>& history, ofVec2f newPos) {
-    // ï¿½ÅVï¿½Ìƒfï¿½[ï¿½^ï¿½ï¿½Ç‰ï¿½
+    // ÅV‚Ìƒf[ƒ^‚ğ’Ç‰Á
     history.push_back(newPos);
 
-    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½İ’ï¿½lï¿½ï¿½è‘½ï¿½ï¿½ï¿½ï¿½ÎÅ‚ï¿½ï¿½Ã‚ï¿½ï¿½fï¿½[ï¿½^ï¿½ï¿½ï¿½íœ
+    // —š—ğ‚ªİ’è’l‚æ‚è‘½‚¯‚ê‚ÎÅ‚àŒÃ‚¢ƒf[ƒ^‚ğíœ
     if (history.size() > smoothingFrames) {
         history.pop_front();
     }
 
-    // ï¿½ï¿½ï¿½Ï’lï¿½ï¿½ï¿½vï¿½Z
+    // •½‹Ï’l‚ğŒvZ
     ofVec2f smoothedPos(0, 0);
     for (const auto& pos : history) {
         smoothedPos += pos;
@@ -450,8 +450,8 @@ ofVec2f ofApp::setJointPosInWindow(k4a_float3_t& jointPosition) {
     k4a_result_t result = k4a_calibration_3d_to_2d(
         &sensor_calibration,
         &jointPosition,
-        K4A_CALIBRATION_TYPE_DEPTH, // Depthï¿½Jï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô‚Å‚Ì•ÏŠï¿½
-        K4A_CALIBRATION_TYPE_DEPTH, // 2Dï¿½ï¿½ï¿½Wï¿½ï¿½ï¿½Jï¿½ï¿½ï¿½[ï¿½æ‘œï¿½Éƒ}ï¿½bï¿½sï¿½ï¿½ï¿½O
+        K4A_CALIBRATION_TYPE_DEPTH, // DepthƒJƒƒ‰‹óŠÔ‚Å‚Ì•ÏŠ·
+        K4A_CALIBRATION_TYPE_DEPTH, // 2DÀ•W‚ğƒJƒ‰[‰æ‘œ‚Éƒ}ƒbƒsƒ“ƒO
         &hand2D,
         &valid);
     if (result == K4A_RESULT_SUCCEEDED)
