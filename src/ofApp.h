@@ -20,6 +20,9 @@ class ofApp : public ofBaseApp{
 		void update();
 		void draw();
 		void exit();
+		void closeDevice();
+		void connect();
+		void reconnect();
 
 		void keyPressed(int key);
 		void keyReleased(int key);
@@ -89,6 +92,10 @@ class ofApp : public ofBaseApp{
 		std::deque<ofVec2f> adjustedHandHistory2d;
 		ofVec2f getSmoothedPosition(std::deque<ofVec2f>& history, ofVec2f newPos);
 
-		int depthGetErrorCount = 0;
+		unsigned int depthGetErrorCount = 0;
+		unsigned int irGetErrorCount = 0;
+		unsigned int deviceTimeoutCount = 0;
+		const int timeoutThreshold = 20;
+		bool isReconnecting = false;
 		
 };
