@@ -22,7 +22,8 @@ class ofApp : public ofBaseApp{
 		void exit();
 		void closeDevice();
 		void connect();
-		void reconnect();
+		void reconnect(string reasonStr);
+		void writeLofTxt(string mm);
 
 		void keyPressed(int key);
 		void keyReleased(int key);
@@ -95,7 +96,8 @@ class ofApp : public ofBaseApp{
 		unsigned int depthGetErrorCount = 0;
 		unsigned int irGetErrorCount = 0;
 		unsigned int deviceTimeoutCount = 0;
-		const int timeoutThreshold = 20;
+		const int sensorTimeoutThred = 60;
+		const int timeoutThreshold = 10;
 		bool isReconnecting = false;
 		
 };

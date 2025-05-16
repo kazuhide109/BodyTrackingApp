@@ -22,13 +22,12 @@ void ofApp::setup() {
 }
 
 void ofApp::exit() {
-	
+	writeLofTxt("アプリケーションを終了しました: ");
 }
 
 
 void ofApp::closeDevice() {
    
-	ofLogNotice() << "デバイスを閉じる";
 	ofLogNotice() << "デバイスを終了";
 	//ofxOscMessage m;
 	//m.setAddress("/end");
@@ -47,6 +46,7 @@ void ofApp::closeDevice() {
 		k4a_device_close(device);
 		device = nullptr;
 	}
+	ofLogNotice() << "デバイス初期化";
 }
 
 void ofApp::connect() {
@@ -98,12 +98,26 @@ void ofApp::connect() {
 	isReconnecting = false;
 }
 
-void ofApp::reconnect() {
+void ofApp::writeLofTxt(string mm) {
+	std::ofstream logFile("log.txt", std::ios::app); // appendモードで開く
+	if (logFile.is_open()) {
+		logFile<< mm << mm << ofGetTimestampString() << std::endl;
+		logFile.close();
+	}
+	else {
+		ofLogError() << "ログファイルを開けませんでした。";
+	}
+}
+
+void ofApp::reconnect(string reasonStr) {
+	writeLofTxt(reasonStr);
+
 	isReconnecting = true;
 	closeDevice();
 	ofLogNotice() << "再接続を開始。";
 	connect();
 }
+
 
 
 
@@ -120,8 +134,10 @@ void ofApp::update() {
 			if (depth_image == NULL) {
 				ofLogNotice() << "Failed to get depth image.";
 				depthGetErrorCount += 1;
-				if (depthGetErrorCount > timeoutThreshold) {
-					reconnect();
+				if (depthGetErrorCount > sensorTimeoutThred) {
+					string mm = "デプスカメラのタイムアウトが連続しました。デバイスをシャットダウンし、再接続を試みます。 ";
+					std::cout << mm << endl;
+					reconnect(mm);
 				}
 				return;
 			}
@@ -131,8 +147,10 @@ void ofApp::update() {
 			if (ir_image == NULL) {
 				ofLogNotice() << "Failed to get ir image.";
 				irGetErrorCount += 1;
-				if (irGetErrorCount > timeoutThreshold) {
-					reconnect();
+				if (irGetErrorCount > sensorTimeoutThred) {
+					string mm = "赤外線カメラのタイムアウトが連続しました。デバイスをシャットダウンし、再接続を試みます。" ;
+					std::cout << mm << endl;
+					reconnect(mm);
 				}
 				return;
 			}
@@ -159,7 +177,7 @@ void ofApp::update() {
 				m.addIntArg(state);
 				sender.sendMessage(m);
 
-				ofLogNotice("boduNum") << bodyNum;
+				//ofLogNotice("boduNum") << bodyNum;
 
 				k4a_float2_t hand2D = { 0 };
 				int valid = 0;
@@ -303,8 +321,9 @@ void ofApp::update() {
 
 			deviceTimeoutCount += 1;
 			if (deviceTimeoutCount > timeoutThreshold) {
-				ofLogFatalError() << "タイムアウトが連続しました。デバイスをシャットダウンし、再接続を試みます。 ";
-				reconnect();
+				string mm = "タイムアウトが連続しました。デバイスをシャットダウンし、再接続を試みます。 ";
+				std::cout << mm << endl;
+				reconnect(mm);
 			}
 			return;
 		}
@@ -340,7 +359,7 @@ void ofApp::draw() {
 		// 関節の描画
 		ofSetColor(0, 0, 255);
 		ofDrawSphere(0, 0, 1500, 10);
-		ofLogNotice("joints size") << joints.size();
+		//ofLogNotice("joints size") << joints.size();
 		if (joints.size() > 0) {
 			ofSetColor(180, 0, 0);
 			for (const auto & joint : joints) {
